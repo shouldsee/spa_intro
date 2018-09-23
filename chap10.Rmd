@@ -1,0 +1,253 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+# L = 100
+L = 50
+
+ts = 1:L
+pop <- rnorm(L)
+pop <- rnorm(L,mean = 5, sd = 0 )
+
+rate <- rnorm(L,mean = 0.8, sd = .5 )
+rate <- rnorm(L,mean = 5, sd = .5 )
+
+?rnorm
+d <- 0.1
+# lowpass.spline <- smooth.spline(ts, rate, spar = .0);
+lowpass.spline <- smooth.spline(ts, rate, spar = .5);
+paste0(c(mean(rate), sd(rate)))
+plot(rate, type = 'l')
+
+rate <-predict(lowpass.spline, ts)$y;
+paste0(c(mean(rate), sd(rate)))
+lines(rate, col='red')
+
+lowpass.spline <- smooth.spline(ts, pop, spar = 0.5);
+frame()
+plot( pop, type = 'l')
+pop <-predict(lowpass.spline, ts)$y;
+lines(pop, col='red')
+```
+```{r}
+r0 = 0.9
+
+L = 20
+rate= rep(r0,L)
+pop = rep(0,L)
+pop[1:5] <-5
+rate = rep( c(0.9,1.2),c( 10, 10))
+d <- 0.1
+
+# head(pop,5)
+# # rate
+# repmat = function(X,m,n){
+# ##R equivalent of repmat (matlab)
+# mx = dim(X)[1]
+# nx = dim(X)[2]
+# matrix(t(matrix(X,mx,nx*n)),mx*m,nx*n,byrow=T)
+# }
+# 
+# s0$his = do.call(rbind, rep(list(pop), s0$nhis))
+# s0$his%f%dim
+
+```
+
+```{r init_const}
+L = 20
+pop = rep(0,L)
+pop[1:5] <-5
+pop0<-pop
+rate = rep( c(0.9,1.2),c( 10, 10))
+d <- 0.2
+
+
+#' Add together two numbers. 
+#' Reflective boudary is assumed
+#'
+#' @param pop initial state vector, indicates population in each cell
+#' @param rate growth rate of each cell. 
+#' @param filter A 3-element vector describing the spatial dispersal.
+#' @param nhis (int) Length of history that is kept.
+#' @return A list that is ready to be passed to kickoff()
+#' @examples
+#' add(1, 1)
+s0 <- list(    pop = pmax(0,pop),
+               rate = pmax(0,rate),
+               filter= c(d, 1-2*d, d),
+               nhis = 100
+               )
+s0$his <- do.call(rbind, rep(list(pop), s0$nhis))
+s0$L <- length(s0$pop)
+s1 <- kickoff(100,s0)
+
+
+```
+
+```{r vis}
+shuffle <- function(vct){
+sample(vct, length(vct))
+}
+pop <- pop0
+
+pop = rep(0,L)
+pop[1:5] <-5
+rate <- rep( c(0.9,1.2),c( 10, 10)) %f% shuffle
+s0 <- list(    pop = pmax(0,pop),
+               rate = pmax(0,rate),
+               filter= c(d, 1-2*d, d),
+               nhis = 100
+               )
+s0$his <- do.call(rbind, rep(list(pop), s0$nhis))
+s0$L <- length(s0$pop)
+
+s1 <- kickoff(100,s0)
+persp(
+  log1p( exp(1)*s1$hist) 
+  )
+plot(
+  log1p( exp(1)*
+    apply(s1$hist,MARGIN = 1,FUN = sum)
+    ),
+  type = 'l'
+)
+```
+
+```{r helper}
+source('DMB.R')
+
+
+```
+
+```{r}
+tmax = 50
+system.file(package = 'gplots')
+library('gplots')
+```
+
+```{r}
+?heatmap
+plot(s0$pop)
+library('ggplot2')
+```
+
+```{r}
+
+s0 <- list(pop = pmax(0,pop),
+               rate = pmax(0,rate),
+               filter= c(d, 1-2*d, d),
+               L = L,
+               d = d,
+               nhis = 100
+               )
+s0$his <- do.call(rbind, rep(list(pop), s0$nhis))
+s1 <- kickoff(50,s0)
+# par(new = TRUE)
+# plot(s1$pop,type = 'l') 
+# s2 <- kickoff(50,s1)
+# ?heatmap.2
+```
+
+
+```{r}
+vec = c(1,2,3,4)
+shifter(vec,1)
+tpop <- vec
+  ngh <-rbind(
+          shifter(tpop,1),
+          tpop,
+          shifter(tpop,-1)
+          )
+# s$filter
+  ngh
+tocol <- sweep(ngh, MARGIN=1, s$filter,FUN = '*')
+pop <- apply(tocol, MARGIN=2 , sum)
+pop
+tocol / ngh
+vec[2:length(vec)-1]
+vec[2:3]
+?sweep
+```
+
+```require(ggplot2)
+
+d = data.frame(y1 = s$pop, y2 = s$rate)
+
+ggplot(d, aes(1:L)) + 
+  geom_line(aes(y = rescale(y1))) + 
+  geom_line(aes(y = rescale(y2)))
+
+# facet_wrap(~chrom)
+# is(s$pop,'vector')
+# help(class(vec))
+```
+
+
+```{r}
+plot(cars)
+
+mat = matrix(rnorm(100),10,10,10)
+mat[mat > .5 & mat < 1]
+as.data.frame(mat)
+'%at%' <- function(x,y) { attr(x,y) }
+'%f%' <- function(x,f) { do.call(what = f,
+                                 args = list(x)) }
+
+# mat%at%
+mat%at%'dim'
+attributes(mat)
+mat%f%names
+
+
+# ?'$'b
+# ?eigen
+?convolve
+```
+
+
+```{r}
+args <- c('baz', 'foob') 
+do.call(
+  file.path,
+  args = as.list(c("/foo/bar", args))
+)
+
+
+parallel::detectCores()
+cl <- parallel::makeCluster(
+  parallel::detectCores() / 8
+  )
+parallel::stopCluster(
+  cl
+)
+```
+
+```{r}
+parallel::detectCores() %/% 7
+attributes(
+Sys.getenv()
+)$'nam'
+
+names(Sys.getenv())
+
+attributes(mat)
+# geta
+??'datalist'
+```
+
+```{python}
+import matplotlib
+print __name__
+a = __name__
+```
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).

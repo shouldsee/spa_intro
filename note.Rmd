@@ -1,0 +1,44 @@
+---
+title: "Notes"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r factors_object}
+0 || 1 || stop('123')
+e <- new.env()
+e
+str(e)
+e$wtf <- 1
+ls(e)
+
+scores1 <- c('good', 'poor', 'bad', 'poor',
+'bad', 'bad', 'good')
+s2 <- factor(scores1,
+levels = c('poor', 'bad', 'good')
+# ,ordered = TRUE
+)
+environment(sum) <-e
+# e$
+environment(f) <-e
+environment(f) <- globalenv()
+?environment
+env.profile(e)
+
+
+parent.env(sum)
+?parent
+# s2[1]<s2[2]
+mode(e)%f%print
+class(e)%f%print
+typeof(e)%f%print
+?mode
+mode(s2)
+typeof(s2)
+class(s2)
+is(s2)
+
+```
